@@ -24,13 +24,3 @@ def vandermonde_det(v):
             det *= (values[i] - values[j])
 
     return det
-
-
-#examples
-v = vandermonde_matrix([1,2,3,4])
-print(v)
-d = vandermonde_det(v)
-print(d)
-
-v = vandermonde_matrix([1])
-print(vandermonde_det(v))
