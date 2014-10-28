@@ -9,4 +9,5 @@ setup(name='numericalmethods',
       license='MIT',
       package_dir={'numericalmethods': 'src'},
       packages=['numericalmethods'],
+      install_requires=['numpy'],
       zip_safe=False)
