@@ -2,8 +2,8 @@
 from numericalmethods.linear_equations import *
 
 a = numpy.matrix([[8.0, 1.0, -1.0], [2.0, 1.0, 9.0], [1.0, -7.0, 2.0]])
-print(lu_decomposition(a))
-
+print(doolittle_lu_decomposition(a))
+print(crout_lu_decomposition(a)) 
 
 # Equations: 
 # 8 = 8x + y - Z

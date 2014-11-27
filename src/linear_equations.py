@@ -7,7 +7,7 @@ import numpy
 from copy import copy, deepcopy
 
 def solve_eqns(Ax, B):
-    decomp = lu_decomposition(Ax)
+    decomp = crout_lu_decomposition(Ax)
     l = decomp[0]
     u = decomp[1]
 
@@ -24,33 +24,65 @@ def solve_eqns(Ax, B):
     
     return x 
 
+
+
 # Performs Doolittle LU decomposition of an nxn matrix
 # returns a tuple containing "lower triangle" of A (L)
 # and "upper triangle" of A (U). Such that A = LU
-def lu_decomposition(A):
+def doolittle_lu_decomposition(A):
     rows = A.shape[0]
     cols = A.shape[1]
-    
+    n = rows
+
     U = deepcopy(A)
     # Calculate U 
-    for i in range(0, rows):
-        for j in range(i + 1, rows):
+    for i in range(0, n):
+        for j in range(i + 1, n):
             mul = U[j, i] / U[i, i]
-            for k in range(0, cols):
+            for k in range(0, n):
                 U[j, k] -= (U[i, k] * mul)
     
     L = deepcopy(A)
     # Calculate L
-    for row in range(0, rows):
+    for row in range(0, n):
         for col in range(0, row):
             for i in range(0, col):
                 L[row, col] -= (L[row, i] * U[i, row - 1])
             L[row, col] /= U[col, col]
 
     # Get rid of "upper part" of L matrix
-    for row in range(0, rows):
-        for col in range(row, cols):
+    for row in range(0, n):
+        for col in range(row, n):
             L[row,col] = 1 if row == col else 0
+
+    return (L, U)
+
+
+
+# Performs Crout LU decomposition of an nxn matrix
+# returns a tuple containing "lower triangle" of A (L)
+# and "upper triangle" of A (U). Such that A = LU
+def crout_lu_decomposition(A):
+    rows = A.shape[0]
+    cols = A.shape[1]
+    n = rows
+
+    U = numpy.identity(n)
+    L = numpy.zeros((n, n))
+    
+    for j in range(0, n):
+        for i in range(j, n):
+            sum = 0
+            for k in range(0, j):
+                sum += L[i, k] * U[k, j] 
+            
+            L[i, j] = A[i, j] - sum
+ 
+        for i in range(j, n):
+            sum = 0;
+            for k in range(0, j):
+                sum += L[j, k] * U[k, i];
+            U[j, i] = (A[j, i] - sum) / L[j, j]
 
     return (L, U)
 
