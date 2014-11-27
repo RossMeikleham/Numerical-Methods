@@ -7,15 +7,15 @@ import numpy
 from copy import copy, deepcopy
 
 def solve_eqns(Ax, B):
-    decomp = crout_lu_decomposition(Ax)
+    decomp = doolittle_lu_decomposition(Ax)
     l = decomp[0]
     u = decomp[1]
 
     n = len(B)
 
     z = []
-    for i in range(0, n):
-        z.append((B[i] - sum(z[j] * l[i, j] for j in range(0, i))) / l[i, i])
+    for i in range(n):
+        z.append((B[i] - sum(z[j] * l[i, j] for j in range(i))) / l[i, i])
 
     # Back substitute to obtain solutions
     x = [0] * n
@@ -34,29 +34,19 @@ def doolittle_lu_decomposition(A):
     cols = A.shape[1]
     n = rows
 
-    U = deepcopy(A)
-    # Calculate U 
-    for i in range(0, n):
-        for j in range(i + 1, n):
-            mul = U[j, i] / U[i, i]
-            for k in range(0, n):
-                U[j, k] -= (U[i, k] * mul)
+    L = numpy.identity(n)
+    U = numpy.zeros((n, n))
     
-    L = deepcopy(A)
-    # Calculate L
-    for row in range(0, n):
-        for col in range(0, row):
-            for i in range(0, col):
-                L[row, col] -= (L[row, i] * U[i, row - 1])
-            L[row, col] /= U[col, col]
-
-    # Get rid of "upper part" of L matrix
-    for row in range(0, n):
-        for col in range(row, n):
-            L[row,col] = 1 if row == col else 0
+    for j in range(n):
+        for i in range(j + 1):
+            s = sum(L[i, k] * U[k, j] for k in range(i))
+            U[i, j] = A[i, j] - s
+ 
+        for i in range(j, n):
+            s = sum(L[i, k] * U[k, j] for k in range(j))
+            L[i, j] = (A[i, j] - s) / U[j, j]
 
     return (L, U)
-
 
 
 # Performs Crout LU decomposition of an nxn matrix
@@ -70,19 +60,14 @@ def crout_lu_decomposition(A):
     U = numpy.identity(n)
     L = numpy.zeros((n, n))
     
-    for j in range(0, n):
+    for j in range(n):
         for i in range(j, n):
-            sum = 0
-            for k in range(0, j):
-                sum += L[i, k] * U[k, j] 
-            
-            L[i, j] = A[i, j] - sum
+            s = sum(L[i, k] * U[k, j] for k in range(j))
+            L[i, j] = A[i, j] - s
  
         for i in range(j, n):
-            sum = 0;
-            for k in range(0, j):
-                sum += L[j, k] * U[k, i];
-            U[j, i] = (A[j, i] - sum) / L[j, j]
+            s = sum(L[j, k] * U[k, i] for k in range(j))
+            U[j, i] = (A[j, i] - s) / L[j, j]
 
     return (L, U)
 
